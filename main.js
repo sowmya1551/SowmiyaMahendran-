@@ -11,6 +11,45 @@ var typed = new Typed(".input", {
   loop: true,
 });
 
+// ── AUTO EXPERIENCE DURATION ──────────────
+// Calculates months worked since 05 May 2025 and updates the badge + stat
+(function () {
+  var start = new Date(2025, 4, 5); // May = index 4
+  var now   = new Date();
+
+  var months =
+    (now.getFullYear() - start.getFullYear()) * 12 +
+    (now.getMonth() - start.getMonth());
+
+  // If day of month hasn't reached 5 yet, subtract 1
+  if (now.getDate() < 5) months = Math.max(0, months - 1);
+
+  var years  = Math.floor(months / 12);
+  var remMos = months % 12;
+
+  // Build a readable string, e.g. "1 yr 2 mos" or "10 mos"
+  var durationText = "";
+  if (years > 0 && remMos > 0) {
+    durationText = years + " yr " + remMos + " mos";
+  } else if (years > 0) {
+    durationText = years + " yr" + (years > 1 ? "s" : "");
+  } else {
+    durationText = months + " mos";
+  }
+
+  // Update the experience date badge
+  var badge = document.getElementById("expDateBadge");
+  if (badge) {
+    badge.textContent = "05/2025 – Present · " + durationText;
+  }
+
+  // Update the stat number on the home section
+  var statEl = document.getElementById("statMonths");
+  if (statEl) {
+    statEl.textContent = months;
+  }
+})();
+
 // ── ACTIVE NAV LINK ───────────────────────
 document.querySelectorAll(".nav li a").forEach((link) => {
   link.addEventListener("click", function () {
@@ -66,8 +105,6 @@ if (form && submitBtn) {
     fetch("https://api.web3forms.com/submit", { method: "POST", body: formData })
       .then(async (response) => {
         const data = await response.json();
-        console.log("Web3Forms Response:", data);
-
         if (data.success) {
           submitBtn.textContent = "✅ Message Sent!";
           submitBtn.style.background = "#00c853";
@@ -97,8 +134,7 @@ if (form && submitBtn) {
           }, 4000);
         }
       })
-      .catch((error) => {
-        console.error("Error:", error);
+      .catch(() => {
         submitBtn.textContent = "❌ No Internet";
         submitBtn.style.background = "#ff1744";
         submitBtn.style.color = "#fff";
